@@ -91,10 +91,63 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
 	if function == "invoke" {
 		return t.invoke(stub, args)
+	} else if function == "write" {
+		return t.write(stub, args)
 	}
 
 	return shim.Error("Invalid invoke function name. Expecting \"invoke\"")
 }
+
+
+func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface) pb.Response {
+	function, args := stub.GetFunctionAndParameters()
+	if function == "read" {
+		return t.write(stub, args)
+	} 
+
+	return shim.Error("Invalid Query function name. Expecting \"Query\"")
+}
+
+
+// write - invoke function to write key/value pair
+func (t *SimpleChaincode) write(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var key, value string
+	var err error
+	fmt.Println("running write()")
+
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2. name of the key and value to set")
+	}
+
+	key = args[0] //rename for funsies
+	value = args[1]
+	err = stub.PutState(key, []byte(value)) //write the variable into the chaincode state
+	if err != nil {
+		return shim.Error("err")
+	}
+	return shim.Success(nil)
+}
+
+// read - query function to read key/value pair
+func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var key, jsonResp string
+
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting name of the key to query")
+	}
+
+	key = args[0]
+	valAsbytes, err := stub.GetState(key)
+	if err != nil {
+		jsonResp = "{\"Error\":\"Failed to get state for " + key + "\"}"
+		return shim.Error(jsonResp)
+	}
+
+	return shim.Success(valAsbytes)
+}
+
+
+
 
 func main() {
 	err := shim.Start(new(SimpleChaincode))
