@@ -93,9 +93,11 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.invoke(stub, args)
 	} else if function == "write" {
 		return t.write(stub, args)
-	}
+	} else if function == "read" { //read a variable
+        return t.read(stub, args)
+    }
 
-	return shim.Error("Invalid invoke function name. Expecting \"invoke\"")
+	return shim.Error("Invalid invoke function name. lalalal Expecting \"invoke\"")
 }
 
 
@@ -148,10 +150,3 @@ func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string) 
 
 
 
-
-func main() {
-	err := shim.Start(new(SimpleChaincode))
-	if err != nil {
-		fmt.Printf("Error starting Simple chaincode: %s", err)
-	}
-}
